@@ -7,7 +7,7 @@ local TweenService = game:GetService("TweenService")
 local RunService   = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 
--- palette
+-- Palette
 local COL_BG       = Color3.fromRGB(24, 26, 34)
 local COL_BG2      = Color3.fromRGB(34, 37, 48)
 local COL_CARD     = Color3.fromRGB(40, 44, 58)
@@ -26,7 +26,7 @@ gui.ResetOnSpawn = false
 gui.DisplayOrder = 999999
 gui.IgnoreGuiInset = true
 
--- shadow
+-- Shadow
 local shadow = Instance.new("Frame")
 shadow.Parent = gui
 shadow.Size = UDim2.new(0, 300, 0, 306)
@@ -39,7 +39,7 @@ local shCorner = Instance.new("UICorner")
 shCorner.CornerRadius = UDim.new(0, 20)
 shCorner.Parent = shadow
 
--- main window
+-- Main window
 local frame = Instance.new("Frame")
 frame.Parent = gui
 frame.Size = UDim2.new(0, 300, 0, 306)
@@ -155,7 +155,7 @@ subtitleText.TextSize = 10
 subtitleText.TextXAlignment = Enum.TextXAlignment.Left
 subtitleText.ZIndex = 5
 
--- Minimize Button (—) - Возвращена на место
+-- Minimize Button (—)
 local minBtn = Instance.new("TextButton")
 minBtn.Parent = titleBar
 minBtn.Size = UDim2.new(0, 30, 0, 30)
@@ -172,7 +172,7 @@ local minBtnCorner = Instance.new("UICorner")
 minBtnCorner.CornerRadius = UDim.new(0, 8)
 minBtnCorner.Parent = minBtn
 
--- Close/Circle Button (X) - Строго в правом верхнем углу
+-- Close/Circle Button (X)
 local closeBtn = Instance.new("TextButton")
 closeBtn.Parent = titleBar
 closeBtn.Size = UDim2.new(0, 30, 0, 30)
@@ -219,11 +219,11 @@ circleStroke.Color = COL_ACCENT
 circleStroke.Thickness = 2
 circleStroke.Parent = circleBtn
 
--- Логика перетаскивания кружка
+-- Circle drag logic
 local draggingCircle = false
 local dragStart = nil
 local startPos = nil
-local dragMoved = false
+local dragMoved = false -- To distinguish click from drag
 
 circleBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -244,7 +244,7 @@ circleBtn.InputChanged:Connect(function(input)
         if draggingCircle then
             local delta = input.Position - dragStart
             if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
-                dragMoved = true
+                dragMoved = true -- If moved more than 5 pixels, it's a drag
             end
             circleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
@@ -552,7 +552,7 @@ end)
 
 -- ============ MINIMIZE / RESTORE LOGIC ============
 
--- 1. Обычное сворачивание в полоску (кнопка —)
+-- 1. Standard minimize to bar (— button)
 local minimizedBar = false
 local fullH = 306
 minBtn.MouseButton1Click:Connect(function()
@@ -569,23 +569,26 @@ minBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 2. Превращение в кружок (кнопка X)
+-- 2. Shrink to circle (X button)
 closeBtn.MouseButton1Click:Connect(function()
     frame.Visible = false
     shadow.Visible = false
+    -- Force circle to the top right corner
     circleBtn.Position = UDim2.new(1, -70, 0, 70) 
     circleBtn.Visible = true
 end)
 
--- 3. Возврат из кружка в меню
+-- 3. Restore from circle (only if it was a click, not a drag)
 circleBtn.MouseButton1Click:Connect(function()
     if dragMoved then return end
     
+    -- Menu opens where the circle is (with offset for aesthetics)
     local xScale = circleBtn.Position.X.Scale
     local xOffset = circleBtn.Position.X.Offset - 125 
     local yScale = circleBtn.Position.Y.Scale
     local yOffset = circleBtn.Position.Y.Offset
 
+    -- Clamp position so the window doesn't fly off-screen
     if xOffset < -150 then xOffset = -150 end
     if yOffset > 500 then yOffset = 500 end
 
