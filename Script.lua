@@ -223,7 +223,7 @@ circleStroke.Parent = circleBtn
 local draggingCircle = false
 local dragStart = nil
 local startPos = nil
-local dragMoved = false -- To distinguish click from drag
+local dragMoved = false
 
 circleBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -244,7 +244,7 @@ circleBtn.InputChanged:Connect(function(input)
         if draggingCircle then
             local delta = input.Position - dragStart
             if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
-                dragMoved = true -- If moved more than 5 pixels, it's a drag
+                dragMoved = true
             end
             circleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
@@ -578,21 +578,13 @@ closeBtn.MouseButton1Click:Connect(function()
     circleBtn.Visible = true
 end)
 
--- 3. Restore from circle (only if it was a click, not a drag)
+-- 3. Restore from circle (Menu appears strictly in the center)
 circleBtn.MouseButton1Click:Connect(function()
     if dragMoved then return end
     
-    -- Menu opens where the circle is (with offset for aesthetics)
-    local xScale = circleBtn.Position.X.Scale
-    local xOffset = circleBtn.Position.X.Offset - 125 
-    local yScale = circleBtn.Position.Y.Scale
-    local yOffset = circleBtn.Position.Y.Offset
-
-    -- Clamp position so the window doesn't fly off-screen
-    if xOffset < -150 then xOffset = -150 end
-    if yOffset > 500 then yOffset = 500 end
-
-    frame.Position = UDim2.new(xScale, xOffset, yScale, yOffset)
+    -- Force menu to the center of the screen (Scale 0.5, offset -150 for a 300px width)
+    frame.Position = UDim2.new(0.5, -150, 0.5, -150)
+    
     frame.Visible = true
     shadow.Visible = true
     circleBtn.Visible = false
