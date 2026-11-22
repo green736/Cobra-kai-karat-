@@ -5,6 +5,7 @@ local plr = game.Players.LocalPlayer
 local pg  = plr:WaitForChild("PlayerGui")
 local TweenService = game:GetService("TweenService")
 local RunService   = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
 -- palette
 local COL_BG       = Color3.fromRGB(24, 26, 34)
@@ -25,6 +26,7 @@ gui.ResetOnSpawn = false
 gui.DisplayOrder = 999999
 gui.IgnoreGuiInset = true
 
+-- shadow
 local shadow = Instance.new("Frame")
 shadow.Parent = gui
 shadow.Size = UDim2.new(0, 300, 0, 306)
@@ -37,6 +39,7 @@ local shCorner = Instance.new("UICorner")
 shCorner.CornerRadius = UDim.new(0, 20)
 shCorner.Parent = shadow
 
+-- main window
 local frame = Instance.new("Frame")
 frame.Parent = gui
 frame.Size = UDim2.new(0, 300, 0, 306)
@@ -67,15 +70,19 @@ bgGrad.Parent = frame
 
 local SHADOW_OFFSET = 4
 local function updateShadow()
+    if not frame.Visible then
+        shadow.Visible = false
+        return
+    end
+    shadow.Visible = true
     shadow.Position = UDim2.new(
         frame.Position.X.Scale, frame.Position.X.Offset + SHADOW_OFFSET,
         frame.Position.Y.Scale, frame.Position.Y.Offset + SHADOW_OFFSET
     )
 end
 RunService.RenderStepped:Connect(updateShadow)
-updateShadow()
 
--- ============ TITLE BAR (52 px, two lines) ============
+-- ============ TITLE BAR ============
 local titleBar = Instance.new("Frame")
 titleBar.Parent = frame
 titleBar.Size = UDim2.new(1, 0, 0, 52)
@@ -127,7 +134,7 @@ logoDotCorner.Parent = logoDot
 local titleText = Instance.new("TextLabel")
 titleText.Parent = titleBar
 titleText.BackgroundTransparency = 1
-titleText.Size = UDim2.new(1, -60, 0, 18)
+titleText.Size = UDim2.new(1, -100, 0, 18)
 titleText.Position = UDim2.new(0, 34, 0, 8)
 titleText.Text = "COBRA KAI KARATE"
 titleText.TextColor3 = COL_TEXT
@@ -139,7 +146,7 @@ titleText.ZIndex = 5
 local subtitleText = Instance.new("TextLabel")
 subtitleText.Parent = titleBar
 subtitleText.BackgroundTransparency = 1
-subtitleText.Size = UDim2.new(1, -60, 0, 14)
+subtitleText.Size = UDim2.new(1, -100, 0, 14)
 subtitleText.Position = UDim2.new(0, 34, 0, 28)
 subtitleText.Text = "Script by Betmenbd3"
 subtitleText.TextColor3 = COL_MUTED
@@ -148,10 +155,11 @@ subtitleText.TextSize = 10
 subtitleText.TextXAlignment = Enum.TextXAlignment.Left
 subtitleText.ZIndex = 5
 
+-- Minimize Button (—) - Возвращена на место
 local minBtn = Instance.new("TextButton")
 minBtn.Parent = titleBar
 minBtn.Size = UDim2.new(0, 30, 0, 30)
-minBtn.Position = UDim2.new(1, -38, 0.5, -15)
+minBtn.Position = UDim2.new(1, -74, 0.5, -15)
 minBtn.BackgroundColor3 = Color3.fromRGB(52, 56, 72)
 minBtn.BorderSizePixel = 0
 minBtn.Text = "—"
@@ -164,11 +172,83 @@ local minBtnCorner = Instance.new("UICorner")
 minBtnCorner.CornerRadius = UDim.new(0, 8)
 minBtnCorner.Parent = minBtn
 
-minBtn.MouseEnter:Connect(function()
-    TweenService:Create(minBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 76, 96)}):Play()
+-- Close/Circle Button (X) - Строго в правом верхнем углу
+local closeBtn = Instance.new("TextButton")
+closeBtn.Parent = titleBar
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -38, 0.5, -15)
+closeBtn.BackgroundColor3 = Color3.fromRGB(52, 56, 72)
+closeBtn.BorderSizePixel = 0
+closeBtn.Text = "X"
+closeBtn.TextColor3 = COL_TEXT
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 14
+closeBtn.AutoButtonColor = false
+closeBtn.ZIndex = 6
+local closeBtnCorner = Instance.new("UICorner")
+closeBtnCorner.CornerRadius = UDim.new(0, 8)
+closeBtnCorner.Parent = closeBtn
+
+-- Hover effects
+minBtn.MouseEnter:Connect(function() TweenService:Create(minBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 76, 96)}):Play() end)
+minBtn.MouseLeave:Connect(function() TweenService:Create(minBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(52, 56, 72)}):Play() end)
+closeBtn.MouseEnter:Connect(function() TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = COL_RED}):Play() end)
+closeBtn.MouseLeave:Connect(function() TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(52, 56, 72)}):Play() end)
+
+-- ============ CIRCLE FLOATING BUTTON ============
+local circleBtn = Instance.new("TextButton")
+circleBtn.Parent = gui
+circleBtn.Size = UDim2.new(0, 50, 0, 50)
+circleBtn.Position = UDim2.new(1, -70, 0, 70) 
+circleBtn.BackgroundColor3 = COL_BG
+circleBtn.BorderSizePixel = 0
+circleBtn.Text = "CKK"
+circleBtn.TextColor3 = COL_ACCENT
+circleBtn.Font = Enum.Font.GothamBold
+circleBtn.TextSize = 13
+circleBtn.Visible = false
+circleBtn.ZIndex = 10
+circleBtn.AutoButtonColor = false
+
+local circleCorner = Instance.new("UICorner")
+circleCorner.CornerRadius = UDim.new(1, 0)
+circleCorner.Parent = circleBtn
+
+local circleStroke = Instance.new("UIStroke")
+circleStroke.Color = COL_ACCENT
+circleStroke.Thickness = 2
+circleStroke.Parent = circleBtn
+
+-- Логика перетаскивания кружка
+local draggingCircle = false
+local dragStart = nil
+local startPos = nil
+local dragMoved = false
+
+circleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        draggingCircle = true
+        dragMoved = false
+        dragStart = input.Position
+        startPos = circleBtn.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                draggingCircle = false
+            end
+        end)
+    end
 end)
-minBtn.MouseLeave:Connect(function()
-    TweenService:Create(minBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(52, 56, 72)}):Play()
+
+circleBtn.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        if draggingCircle then
+            local delta = input.Position - dragStart
+            if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
+                dragMoved = true
+            end
+            circleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end
 end)
 
 -- ============ CONTENT ============
@@ -199,7 +279,6 @@ end
 
 -- SPY CARD
 local spyCard = makeCard(0, 56)
-
 local spyTitle = Instance.new("TextLabel")
 spyTitle.Parent = spyCard
 spyTitle.BackgroundTransparency = 1
@@ -240,18 +319,13 @@ local spyBtnCorner = Instance.new("UICorner")
 spyBtnCorner.CornerRadius = UDim.new(0, 8)
 spyBtnCorner.Parent = spyBtn
 
-spyBtn.MouseEnter:Connect(function()
-    TweenService:Create(spyBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(120, 165, 255)}):Play()
-end)
+spyBtn.MouseEnter:Connect(function() TweenService:Create(spyBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(120, 165, 255)}):Play() end)
 spyBtn.MouseLeave:Connect(function()
-    if spyBtn.Text == "SPY" then
-        TweenService:Create(spyBtn, TweenInfo.new(0.15), {BackgroundColor3 = COL_ACCENT}):Play()
-    end
+    if spyBtn.Text == "SPY" then TweenService:Create(spyBtn, TweenInfo.new(0.15), {BackgroundColor3 = COL_ACCENT}):Play() end
 end)
 
 -- AUTO CARD
 local autoCard = makeCard(64, 72)
-
 local autoTitle = Instance.new("TextLabel")
 autoTitle.Parent = autoCard
 autoTitle.BackgroundTransparency = 1
@@ -308,7 +382,6 @@ switchBtn.ZIndex = 7
 
 -- SETTINGS CARD
 local setCard = makeCard(144, 60)
-
 local delayTitle = Instance.new("TextLabel")
 delayTitle.Parent = setCard
 delayTitle.BackgroundTransparency = 1
@@ -355,7 +428,6 @@ delayStroke.Parent = delayBox
 
 -- STATS CARD
 local statsCard = makeCard(212, 42)
-
 local repsLabel = Instance.new("TextLabel")
 repsLabel.Parent = statsCard
 repsLabel.BackgroundTransparency = 1
@@ -478,23 +550,49 @@ task.spawn(function()
     end
 end)
 
--- minimize / restore
-local minimized = false
+-- ============ MINIMIZE / RESTORE LOGIC ============
+
+-- 1. Обычное сворачивание в полоску (кнопка —)
+local minimizedBar = false
 local fullH = 306
 minBtn.MouseButton1Click:Connect(function()
-    if minimized then
+    if minimizedBar then
         frame.Size = UDim2.new(0, 300, 0, fullH)
-        shadow.Size = UDim2.new(0, 300, 0, fullH)
         content.Visible = true
         minBtn.Text = "—"
-        minimized = false
+        minimizedBar = false
     else
         frame.Size = UDim2.new(0, 300, 0, 52)
-        shadow.Size = UDim2.new(0, 300, 0, 52)
         content.Visible = false
         minBtn.Text = "+"
-        minimized = true
+        minimizedBar = true
     end
+end)
+
+-- 2. Превращение в кружок (кнопка X)
+closeBtn.MouseButton1Click:Connect(function()
+    frame.Visible = false
+    shadow.Visible = false
+    circleBtn.Position = UDim2.new(1, -70, 0, 70) 
+    circleBtn.Visible = true
+end)
+
+-- 3. Возврат из кружка в меню
+circleBtn.MouseButton1Click:Connect(function()
+    if dragMoved then return end
+    
+    local xScale = circleBtn.Position.X.Scale
+    local xOffset = circleBtn.Position.X.Offset - 125 
+    local yScale = circleBtn.Position.Y.Scale
+    local yOffset = circleBtn.Position.Y.Offset
+
+    if xOffset < -150 then xOffset = -150 end
+    if yOffset > 500 then yOffset = 500 end
+
+    frame.Position = UDim2.new(xScale, xOffset, yScale, yOffset)
+    frame.Visible = true
+    shadow.Visible = true
+    circleBtn.Visible = false
 end)
 
 print("[Cobra Kai Karate — Script by Betmenbd3] ready.")
